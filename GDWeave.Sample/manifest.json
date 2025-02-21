@@ -1,5 +1,6 @@
 {
   "Id": "Toes.Seent",
+  "PackPath":  "Toes.Seent.pck",
   "AssemblyPath": "Seent.dll",
   "Dependencies": ["Toes.Socks"],
   "Metadata": {
