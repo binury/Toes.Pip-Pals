@@ -1,0 +1,12 @@
+{
+  "Id": "Toes.Seent",
+  "AssemblyPath": "Seent.dll",
+  "Dependencies": ["Toes.Socks"],
+  "Metadata": {
+    "Name": "Pip Pals",
+    "Author": "Toes",
+    "Version": "1.0.0",
+    "Description": "Keep track of when and how you meet new buds! Cute badges show above players you've met before in past islands/lives..."
+  }
+}
+
