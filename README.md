@@ -5,3 +5,6 @@
 _Keep track of when and how you meet new buds! Cute badges show above players you've met before in past islands/lives._
 
 ## Changelog
+
+### 1.0.3
+- Fixed local_player/self `seen_count` being always `15` (rather than always `0`)

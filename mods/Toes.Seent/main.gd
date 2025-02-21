@@ -51,7 +51,7 @@ func _on_game_entered():
 
 
 func get_times_seen(id: String) -> int:
-	if id == Players.get_id(Players.local_player): return 15
+	if id == Players.get_id(Players.local_player): return 0
 	if not History.has(id): return 1
 	return History[id].times_seen
 
@@ -122,8 +122,8 @@ func get_times_seen_badge(id: String, rich: bool = true) -> String:
 	elif times_seen > 1: times_badge += "•".repeat(min(5, max(times_seen, 1)))
 	else: return ""
 
-	var color := BRO_BADGE_COLOR if times_seen >= 20 else BASIC_BADGE_COLOR
-	if rich: times_badge = ("[color=%s]" % color) +times_badge+ "[/color]"
+	var color: String = BRO_BADGE_COLOR if times_seen >= 20 else BASIC_BADGE_COLOR
+	if rich: times_badge = ("[color=%s]" % color) + (times_badge + "[/color]")
 
 	if rich and times_seen % 5 == 0:
 		times_badge = "[wave amp=50 freq=2]" +times_badge+ "[/wave]"
