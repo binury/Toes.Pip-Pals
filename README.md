@@ -6,5 +6,13 @@ _Keep track of when and how you meet new buds! Cute badges show above players yo
 
 ## Changelog
 
+### 1.1.0
+- Changed pip display to: above name
+
+### 1.0.4
+- Hotfixed pip display bug
+- Pips will now always animate
+- Pip animations are more subtle
+
 ### 1.0.3
 - Fixed local_player/self `seen_count` being always `15` (rather than always `0`)
