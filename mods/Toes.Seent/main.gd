@@ -15,6 +15,8 @@ var History: Dictionary
 var just_joined := true
 # var greet_queue := [] # TODO Unused
 
+func _init() -> void:
+	_load_store()
 
 func _ready() -> void:
 	Players.connect("player_added", self, "init_player")
