@@ -12,7 +12,7 @@ And it cannot be used alongside Pip Pals. You can safely disable or uninstall it
 ## Changelog
 
 ### 1.2.1
-- *Fixed* Crash on joining due to proximity charge with known Pals
+- *Fixed* Crash on joining due to proximity charge with unknown Pals (Thanks: Annarie, RodaEssa)
 
 ### 1.2.0
 - *NEW* Pals can now collect `1x` additional pip _per day_ by powering up in proximity to each other long enough to charge up (~25min)
