@@ -4,7 +4,22 @@
 
 _Keep track of when and how you meet new buds! Cute badges show above players you've met before in past islands/lives._
 
+## Known issues
+- There is an unresolvable mod conflict with [TitleAPI](https://thunderstore.io/c/webfishing/p/LoafWF/TitleAPI/). 
+And it cannot be used alongside Pip Pals. You can safely disable or uninstall it as it is an optional dependency.
+
+
 ## Changelog
+
+### 1.2.1
+- *Fixed* Crash on joining due to proximity charge with known Pals
+
+### 1.2.0
+- *NEW* Pals can now collect `1x` additional pip _per day_ by powering up in proximity to each other long enough to charge up (~25min)
+- This Pal Power metric is stored separately from `times-seen` but for your badges counts the same 1x encounter 
+
+### 1.1.3
+- Added TitleAPI incompatibility warning
 
 ### 1.1.0
 - Changed pip display to: above name

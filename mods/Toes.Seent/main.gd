@@ -12,6 +12,8 @@ onready var Chat = get_node("/root/ToesSocks/Chat")
 
 var History: Dictionary
 
+export var proximity_charge_bank = {}
+
 var just_joined := true
 # var greet_queue := [] # TODO Unused
 
@@ -25,12 +27,46 @@ func _ready() -> void:
 
 
 
-#func _process(delta: float) -> void:
-#	# breakpoint
-#	if not Players.in_game: return
+func _process(delta: float) -> void:
+	if not Players.in_game: return
+	if just_joined: return
+
+	var CHARGE_RANGE := 15.00
+	var MINUTES_TO_FULL_CHARGE = 25
+	var CHAT_CHAR_WIDTH := 30 # Apprx
+	var players_within_range := []
+	# TODO: Refactor this out of here
+	var pos: Vector3 = Players.get_position(Players.local_player)
+	for player in Players.get_players():
+		if pos.distance_to(Players.get_position(player)) <= CHARGE_RANGE:
+			players_within_range.append(Players.get_id(player))
+	for player in players_within_range:
+		var new_charge_level = proximity_charge_bank.get(player, 0.0) + delta
+		var today := Time.get_date_string_from_system(true)
+		var history: Dictionary = History.get(player, {})
+		var last_bonus_received_on: String = history.get("last_bonus_received", "Never")
+		if new_charge_level >= MINUTES_TO_FULL_CHARGE * 60.0:
+			proximity_charge_bank[player] = 0.0
+			if last_bonus_received_on != today:
+				history.proximity_power = history.get("proximity_power", 0) + 1
+				history.last_bonus_received = today
+				_save_store()
+
+				Chat.write("[center][rainbow]" + "o".repeat(CHAT_CHAR_WIDTH) + "[/rainbow][/center]")
+				Chat.write("[center]%s[/center]" % Players.get_username(player))
+				Chat.write("[center][rainbow]PAL PROXIMITY POWER-UP![/rainbow][/center]")
+				Chat.write("[center][rainbow]" + "o".repeat(CHAT_CHAR_WIDTH) + "[/rainbow][/center]")
+		else:
+			proximity_charge_bank[player] = new_charge_level
+
+
+
 
 
 func _on_game_entered():
+	just_joined = true
+	_warn_if_incompat()
+
 	var players: Array = Players.get_players()
 #	if players.empty(): return
 
@@ -52,7 +88,7 @@ func _on_game_entered():
 		Chat.write(get_times_seen_badge(buddy.id, false) + " (" + str(buddy.times_seen) + ") " + buddy.username )
 	if !found_some: Chat.write("...No buddies here yet!")
 
-	yield (get_tree().create_timer(10.0), "timeout")
+	yield (get_tree().create_timer(30.0), "timeout")
 	just_joined = false
 
 
@@ -61,6 +97,10 @@ func get_times_seen(id: String) -> int:
 	var history: Dictionary = History.get(id, {})
 	return history.get("times_seen", 1)
 
+func get_pal_power(id: String) -> int:
+	if id == Players.get_id(Players.local_player): return 0
+	var history: Dictionary = History.get(id, {})
+	return history.get("proximity_power", 0)
 
 
 func _load_store() -> void:
@@ -99,6 +139,9 @@ func _load_store() -> void:
 			}
 		_save_store()
 
+func _exit_tree() -> void:
+	if !History.empty(): _save_store()
+
 
 func _save_store() -> void:
 	var STORE_PATH = "user://seent_history.json"
@@ -109,11 +152,13 @@ func _save_store() -> void:
 
 
 func init_player(player: Actor) -> void:
-	if not Players.is_player_valid(player): return
+	if not Players.is_player_valid(player):
+		# Chat.notify("PP: Invalid player received")
+		return
 	var player_username = Players.get_username(player)
 	var player_id = Players.get_id(player)
 	var current_lobby = Network.STEAM_LOBBY_ID
-	var is_friend = Steam.getFriendRelationship(player.owner_id) == 3
+	# var is_friend = Steam.getFriendRelationship(player.owner_id) == 3
 
 	if player_id == Players.get_id(Players.local_player): return
 
@@ -134,21 +179,26 @@ func init_player(player: Actor) -> void:
 			"last_seen_in": current_lobby,
 			"last_seen_at": today,
 			"first_seen": today,
-			"is_friend": is_friend
+			"proximity_power": 0,
+			# "is_friend": is_friend
 		}
 	_save_store()
 
 
 
 func get_times_seen_badge(id: String, rich: bool = true) -> String:
+	if Players.check(id) == false:
+		return ""
 	var times_badge:= ""
 	var times_seen = get_times_seen(id)
+	var pal_power = get_pal_power(id)
+	var pip_sum = times_seen + pal_power
 	var is_friend = Steam.getFriendRelationship(int(id)) == 3
 
 
-	if times_seen > 10: times_badge += "*".repeat(min(5, max((times_seen -1) / 5, 1)))
-	elif times_seen > 5: times_badge += "+".repeat(min(5, max((times_seen - 1)  / 5, 1)))
-	elif times_seen > 1: times_badge += "•".repeat(min(5, max(times_seen -1, 1)))
+	if pip_sum > 10: times_badge += "*".repeat(min(5, max((pip_sum -1) / 5, 1)))
+	elif pip_sum > 5: times_badge += "+".repeat(min(5, max((pip_sum - 1)  / 5, 1)))
+	elif pip_sum > 1: times_badge += "•".repeat(min(5, max(pip_sum -1, 1)))
 	else: return ""
 
 	var color: String = BRO_BADGE_COLOR if times_seen >= 20 else BASIC_BADGE_COLOR
@@ -168,3 +218,13 @@ func get_player_history(id: String):
 
 static func sort_buddies(budA, budB):
 	return budA.times_seen > budB.times_seen
+
+func _warn_if_incompat():
+	if History.has("_warned"): return
+	var TitleAPI = get_node_or_null("/root/TitleAPI")
+	if is_instance_valid(TitleAPI):
+		Chat.write(
+			"[color=#8c0a22]You appear to have installed a conflicting mod which is known to [u]break Pip Pals!! [/u][/color]" +
+			"If you encounter issues, [u]disable or uninstall TitleAPI[/u]"
+		)
+		History["_warned"] = true
