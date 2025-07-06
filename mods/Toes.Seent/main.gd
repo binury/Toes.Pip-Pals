@@ -80,13 +80,13 @@ func _on_game_entered():
 		})
 	buddies.sort_custom(self, "sort_buddies")
 
-	Chat.write("== Buddy Radar ==")
+	Chat.write("== Pal Scanner ==")
 	var found_some = false
 	for buddy in buddies:
-		if buddy.times_seen < 2: continue
+		if buddy.times_seen < 1: continue
 		found_some = true
 		Chat.write(get_times_seen_badge(buddy.id, false) + " (" + str(buddy.times_seen) + ") " + buddy.username )
-	if !found_some: Chat.write("...No buddies here yet!")
+	if !found_some: Chat.write("...No pals here, yet!")
 
 	yield (get_tree().create_timer(30.0), "timeout")
 	just_joined = false
