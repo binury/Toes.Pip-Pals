@@ -38,8 +38,10 @@ func _process(delta: float) -> void:
 	# TODO: Refactor this out of here
 	var pos: Vector3 = Players.get_position(Players.local_player)
 	for player in Players.get_players():
-		if pos.distance_to(Players.get_position(player)) <= CHARGE_RANGE:
-			players_within_range.append(Players.get_id(player))
+		var id = Players.get_id(player)
+		var player_visible = not Players.is_player_ignored(id)
+		if player_visible and pos.distance_to(Players.get_position(player)) <= CHARGE_RANGE:
+			players_within_range.append(id)
 	for player in players_within_range:
 		var new_charge_level = proximity_charge_bank.get(player, 0.0) + delta
 		var today := Time.get_date_string_from_system(true)
@@ -83,7 +85,7 @@ func _on_game_entered():
 	Chat.write("== Pal Scanner ==")
 	var found_some = false
 	for buddy in buddies:
-		if buddy.times_seen < 1: continue
+		if buddy.times_seen <= 1 or Players.is_player_ignored(buddy.id): continue
 		found_some = true
 		Chat.write(get_times_seen_badge(buddy.id, false) + " (" + str(buddy.times_seen) + ") " + buddy.username )
 	if !found_some: Chat.write("...No pals here, yet!")
@@ -98,7 +100,7 @@ func get_times_seen(id: String) -> int:
 	return history.get("times_seen", 1)
 
 func get_pal_power(id: String) -> int:
-	if id == Players.get_id(Players.local_player): return 0
+	if id == Players.get_id(Players.local_player) or Players.is_player_ignored(id): return 0
 	var history: Dictionary = History.get(id, {})
 	return history.get("proximity_power", 0)
 
@@ -152,15 +154,17 @@ func _save_store() -> void:
 
 
 func init_player(player: Actor) -> void:
-	if not Players.is_player_valid(player):
+	if !(Players.is_player_valid(player) and Players.is_player_valid(Players.local_player)) :
 		# Chat.notify("PP: Invalid player received")
 		return
 	var player_username = Players.get_username(player)
 	var player_id = Players.get_id(player)
+	if Players.is_player_ignored(player_id):
+		return
 	var current_lobby = Network.STEAM_LOBBY_ID
 	# var is_friend = Steam.getFriendRelationship(player.owner_id) == 3
 
-	if player_id == Players.get_id(Players.local_player): return
+	if Players.check(player_id) and player_id == Players.get_id(Players.local_player): return
 
 	var today = Time.get_date_string_from_system(true)
 	if History.has(player_id):
@@ -187,7 +191,7 @@ func init_player(player: Actor) -> void:
 
 
 func get_times_seen_badge(id: String, rich: bool = true) -> String:
-	if Players.check(id) == false:
+	if Players.check(id) == false or Players.is_player_ignored(id):
 		return ""
 	var times_badge:= ""
 	var times_seen = get_times_seen(id)
