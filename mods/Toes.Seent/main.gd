@@ -211,6 +211,8 @@ func get_times_seen_badge(id: String, rich: bool = true) -> String:
 	var color: String = BRO_BADGE_COLOR if times_seen >= 20 else BASIC_BADGE_COLOR
 	if is_friend: color = PAL_BADGE_COLOR
 	if rich: times_badge = ("[color=%s]" % color) + (times_badge + "[/color]")
+	if times_seen >= 30:
+		times_badge = "[rainbow]" + times_badge + "[/rainbow]"
 
 	times_badge = "[wave amp=25 freq=2]" +times_badge+ "[/wave]"
 	times_badge = times_badge.trim_suffix(" ")
