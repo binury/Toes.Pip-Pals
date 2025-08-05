@@ -101,6 +101,8 @@ func _on_game_entered():
 		found_some = true
 		Chat.write(get_times_seen_badge(buddy.id, false) + " (" + str(buddy.times_seen) + ") " + buddy.username )
 	if !found_some: Chat.write("...No pals here, yet!")
+	if randf() <= 0.10:
+		Chat.write("Fun fact: you have met %s pals! Did you know?" % str(History.size()))
 
 	yield (get_tree().create_timer(30.0), "timeout")
 	just_joined = false
