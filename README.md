@@ -15,6 +15,13 @@ And it cannot be used alongside Pip Pals. You can safely disable or uninstall it
 
 ## Changelog
 
+### 1.3.1
+- Fixed leveling up while busy possibly soft-locking player. Sorry!
+- Added low % chance for message with total # of pals (for funsies)
+- When seeing a pal whose name has changed, players will be notified about the change
+    - This keeps track of aliases your pals have been seen with
+    - Lets you know their old name and new name whenever they join, for the first time
+
 ### 1.3.0
 - *New* 30+ pal power pip effect
 - Proximity powering up now shows an animation for you and your pal
