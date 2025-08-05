@@ -209,7 +209,6 @@ func get_times_seen_badge(id: String, rich: bool = true) -> String:
 	else: return ""
 
 	var color: String = BRO_BADGE_COLOR if times_seen >= 20 else BASIC_BADGE_COLOR
-	if is_friend: color = PAL_BADGE_COLOR
 	if rich: times_badge = ("[color=%s]" % color) + (times_badge + "[/color]")
 	if times_seen >= 30:
 		times_badge = "[rainbow]" + times_badge + "[/rainbow]"
