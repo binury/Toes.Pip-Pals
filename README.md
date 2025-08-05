@@ -1,11 +1,16 @@
 # Pip Pals
 
-![Animated Pal](https://i.imgur.com/2GzpE1W.gif)
-![Endorsement](https://i.imgur.com/tBYFSla.png)
+<img src="https://i.imgur.com/2GzpE1W.gif">
+<br/>
+<br/>
 
 
 _Keep track of when and how you meet new buds! Cute badges show above players you've met before in past islands/lives._
 
+
+<br/>
+<img src="https://i.imgur.com/tBYFSla.png">
+<br/>
 <a href='https://ko-fi.com/A0A3YDMVY' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi4.png?v=6' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
 
 ## Known issues
