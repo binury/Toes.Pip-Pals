@@ -63,10 +63,13 @@ func _process(delta: float) -> void:
 				history.proximity_power = history.get("proximity_power", 0) + 1
 				history.last_bonus_received = today
 				_save_store()
+
+				if Players.is_busy():
+					while Players.is_busy():
+						yield(get_tree().create_timer(3.0), "timeout")
+
 				Players.local_player._level_up()
 				Players.get_player(player)._level_up()
-
-
 				Chat.write("[center][rainbow]" + "o".repeat(CHAT_CHAR_WIDTH) + "[/rainbow][/center]")
 				Chat.write("[center]%s[/center]" % Players.get_username(player))
 				Chat.write("[center][rainbow]PAL PROXIMITY POWER-UP![/rainbow][/center]")
