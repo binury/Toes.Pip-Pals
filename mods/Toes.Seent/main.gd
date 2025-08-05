@@ -12,6 +12,16 @@ onready var Chat = get_node("/root/ToesSocks/Chat")
 
 var History: Dictionary
 
+class PlayerHistory:
+	var username: String
+	var times_seen: int
+	var last_seen_in: int
+#	var seen_lobby_name: String
+	var first_seen_at: String
+	var last_seen_at: String
+	var prev_names: Array
+
+
 export var proximity_charge_bank = {}
 
 var just_joined := true
@@ -73,7 +83,6 @@ func _on_game_entered():
 	_warn_if_incompat()
 
 	var players: Array = Players.get_players()
-#	if players.empty(): return
 
 	var buddies = []
 	for player in players:
@@ -166,8 +175,9 @@ func init_player(player: Actor) -> void:
 		return
 	var current_lobby = Network.STEAM_LOBBY_ID
 	# var is_friend = Steam.getFriendRelationship(player.owner_id) == 3
-
-	if Players.check(player_id) and player_id == Players.get_id(Players.local_player): return
+	if not Players.check(player_id):
+		return
+	if player_id == Players.get_id(Players.local_player): return
 
 	var today = Time.get_date_string_from_system(true)
 	if History.has(player_id):
@@ -177,6 +187,15 @@ func init_player(player: Actor) -> void:
 		history.times_seen += 1
 		history.last_seen_in = current_lobby
 		history.last_seen_at = today
+		var username: String = Players.get_username(str(player_id))
+		if history.username != username:
+			Chat.notify("Remember your old pal %s? They're going by %s now" % [history.username, username])
+			if "prev_names" in history and typeof(history.prev_names) == TYPE_ARRAY:
+				history.prev_names.append(history.username)
+			else:
+				history.prev_names = [history.username]
+			history.username = username
+
 
 	else:
 		if !just_joined: Chat.notify("It's your first time meeting " + player_username + ". Say hi!")
@@ -187,6 +206,7 @@ func init_player(player: Actor) -> void:
 			"last_seen_at": today,
 			"first_seen": today,
 			"proximity_power": 0,
+			"prev_names": [],
 			# "is_friend": is_friend
 		}
 	_save_store()
