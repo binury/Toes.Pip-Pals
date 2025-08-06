@@ -20,6 +20,15 @@ And it cannot be used alongside Pip Pals. You can safely disable or uninstall it
 
 ## Changelog
 
+### 1.3.2
+- Reduced likelihood of seeing total Pals messages (5%)
+- Changed random messages to only show when Pals seen is a significant number
+- **New** random chance to be shown your `PALS HALL OF FAME`
+    - Lists your top three Pals of all-time!
+- Pal Scanner is *no longer shown* when joining a *completely empty lobby
+- Mod incompatibility warning now shows *always*, rather than just once, if TitleAPI mod library is installed
+    - This is precautionary in the event that the mod is accidentally auto-reinstalled later (due to being erroneously declared as a dependency)
+
 ### 1.3.1
 - Fixed leveling up while busy possibly soft-locking player. Sorry!
 - Added low % chance for message with total # of pals (for funsies)

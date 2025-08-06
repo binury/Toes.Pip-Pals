@@ -10,6 +10,9 @@ const PAL_BADGE_COLOR: = "#ff2688"
 onready var Players = get_node("/root/ToesSocks/Players")
 onready var Chat = get_node("/root/ToesSocks/Chat")
 
+var italics_font_data = preload("res://Assets/Themes/CartographCF-RegularItalic.otf")
+var bold_italics_font_data = preload("res://Assets/Themes/CartographCF-BoldItalic.otf")
+
 var History: Dictionary
 
 class PlayerHistory:
@@ -34,6 +37,31 @@ func _ready() -> void:
 	Players.connect("player_added", self, "init_player")
 	Players.connect("player_removed", self, "init_player")
 	Players.connect("ingame", self, "_on_game_entered")
+
+
+func _load_custom_italics_font():
+	var fallback_font_data = load("res://Assets/Themes/unifont-16.0.01.otf")
+
+	var gamechat = get_node("/root/playerhud/main/in_game/gamechat/RichTextLabel")
+
+	var italics_font: = DynamicFont.new()
+	italics_font.font_data = italics_font_data
+	italics_font.size = 22
+	italics_font.outline_size = 1
+	italics_font.outline_color = "#06f7f5ed"
+	italics_font.add_fallback(fallback_font_data)
+	gamechat["custom_fonts/italics_font"] = italics_font
+
+	var bold_italics_font: = DynamicFont.new()
+	bold_italics_font.font_data = bold_italics_font_data
+	bold_italics_font.size = 22
+	bold_italics_font.outline_size = 1
+	bold_italics_font.outline_color = "#06f7f5ed"
+	bold_italics_font.add_fallback(fallback_font_data)
+	gamechat["custom_fonts/bold_italics_font"] = bold_italics_font
+
+	gamechat["custom_constants/table_vseparation"] = 5
+	gamechat["custom_constants/line_separation"] = 2
 
 
 
@@ -68,26 +96,26 @@ func _process(delta: float) -> void:
 					while Players.is_busy():
 						yield(get_tree().create_timer(3.0), "timeout")
 
+				# TODO: Consolidate these?
 				Players.local_player._level_up()
 				Players.get_player(player)._level_up()
 				Chat.write("[center][rainbow]" + "o".repeat(CHAT_CHAR_WIDTH) + "[/rainbow][/center]")
-				Chat.write("[center]%s[/center]" % Players.get_username(player))
-				Chat.write("[center][rainbow]PAL PROXIMITY POWER-UP![/rainbow][/center]")
+				Chat.write("[center][i]%s[/i][/center]" % Players.get_username(player))
+				Chat.write("[center][rainbow][i]PAL PROXIMITY POWER-UP![i][/rainbow][/center]")
 				Chat.write("[center][rainbow]" + "o".repeat(CHAT_CHAR_WIDTH) + "[/rainbow][/center]")
 		else:
 			proximity_charge_bank[player] = new_charge_level
 
 
-
-
-
 func _on_game_entered():
+	_load_custom_italics_font()
+
 	just_joined = true
 	_warn_if_incompat()
 
 	var players: Array = Players.get_players()
 
-	var buddies = []
+	var buddies: = []
 	for player in players:
 		var id = Players.get_id(player)
 		buddies.append({
@@ -95,17 +123,56 @@ func _on_game_entered():
 			"username": Players.get_username(player),
 			"times_seen": get_times_seen(id)
 		})
-	buddies.sort_custom(self, "sort_buddies")
+	buddies.sort_custom(self, "_sort_buddies")
 
-	Chat.write("== Pal Scanner ==")
-	var found_some = false
-	for buddy in buddies:
-		if buddy.times_seen <= 1 or Players.is_player_ignored(buddy.id): continue
-		found_some = true
-		Chat.write(get_times_seen_badge(buddy.id, false) + " (" + str(buddy.times_seen) + ") " + buddy.username )
-	if !found_some: Chat.write("...No pals here, yet!")
-	if randf() <= 0.10:
-		Chat.write("Fun fact: you have met %s pals! Did you know?" % str(History.size()))
+	if players.size() > 0:
+		Chat.write("[center][i]== Pal Scanner ==[/i][/center]")
+		var found_some = false
+		for buddy in buddies:
+			if buddy.times_seen <= 1 or Players.is_player_ignored(buddy.id): continue
+			found_some = true
+			Chat.write(get_times_seen_badge(buddy.id, false) + " (" + str(buddy.times_seen) + ") " + buddy.username )
+		if !found_some: Chat.write("[i]...No pals here, yet![/i]")
+
+	var met_min_pals = History.size() >= 100
+	if randf() <= 0.08 and met_min_pals:
+		var sorted_history: = History.values()
+		sorted_history.sort_custom(self, "_sort_buddies")
+		buddies = sorted_history
+
+		var ordinal_imgs: = {
+			0: "res://Assets/Textures/UI/countdown3.png",
+			1: "res://Assets/Textures/UI/countdown2.png",
+			2: "res://Assets/Textures/UI/countdown1.png"
+		}
+
+		var pal_standings: = "[img]res://Assets/Textures/UI/knot_sep.png[/img][table=3]"
+		for i in range(3):
+			var buddy: Dictionary = buddies[i]
+#			Chat.write("[img=36]%s[/img] %s - %s" % [ordinal_imgs[i], buddy.username, buddy.times_seen])
+			pal_standings += "[cell][img=36]%s[/img][/cell]" % ordinal_imgs[i]
+			pal_standings += "[cell][i]%s[/i][/cell]" % buddy.username
+			pal_standings += "[cell]%s[/cell]" % buddy.times_seen
+		pal_standings += "[/table]"
+		var stars_img = "[img=48]res://Assets/Textures/UI/stars.png[/img]"
+		Chat.write("[center][wave amp=33 freq=1.05][i]%s PAL HALL OF FAME %s[/i][/wave][/center]" % [stars_img, stars_img])
+		Chat.write(pal_standings)
+
+	if randf() <= 0.05 and met_min_pals:
+		var follow_ups: = [
+			"Can you name them all?",
+			"Who's your favorite?",
+			"I wonder where they are now...",
+			"You're pretty popular!",
+			"Phenomenal!",
+			"Did you know that?",
+			"I hope you all stay in touch...",
+			"Wow!"
+		]
+
+		var heart_img = "[img=36]res://Assets/Textures/UI/item_star.png[/img]"
+		var pals_seen_msg = "[i]You have met %s pals! %s %s[/i]" % [ str(History.size()), heart_img, follow_ups[randi() % follow_ups.size()] ]
+		Chat.write(pals_seen_msg)
 
 	yield (get_tree().create_timer(30.0), "timeout")
 	just_joined = false
@@ -129,12 +196,14 @@ func _load_store() -> void:
 	if config_file.file_exists(STORE_PATH):
 		config_file.open(STORE_PATH, File.READ)
 		var user_config_content = config_file.get_as_text()
-		# print("STORE CONTENT", user_config_content)
 		config_file.close()
 
 		var parsed_json: JSONParseResult = JSON.parse(user_config_content)
 		if parsed_json.error == OK:
+			# TODO Hack/workaround needs rework (leftover History key)
+			parsed_json.result.erase("_warned")
 			History = parsed_json.result
+			# TODO Sort?
 		else:
 			print("Seent: Failed to parse history.json!!!!!!!!!")
 			print(parsed_json.error_string)
@@ -249,15 +318,13 @@ func get_player_history(id: String):
 	return History[id]
 
 
-static func sort_buddies(budA, budB):
-	return budA.times_seen > budB.times_seen
+func _sort_buddies(budA, budB):
+	return budA["times_seen"] > budB["times_seen"]
 
 func _warn_if_incompat():
-	if History.has("_warned"): return
 	var TitleAPI = get_node_or_null("/root/TitleAPI")
 	if is_instance_valid(TitleAPI):
 		Chat.write(
 			"[color=#8c0a22]You appear to have installed a conflicting mod which is known to [u]break Pip Pals!! [/u][/color]" +
 			"If you encounter issues, [u]disable or uninstall TitleAPI[/u]"
 		)
-		History["_warned"] = true
