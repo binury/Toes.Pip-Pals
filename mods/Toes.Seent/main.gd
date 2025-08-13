@@ -117,15 +117,16 @@ func _process(delta: float) -> void:
 
 				if Players.is_busy():
 					while Players.is_busy():
-						yield(get_tree().create_timer(3.0), "timeout")
+						yield (get_tree().create_timer(3.0), "timeout")
 
 				# TODO: Consolidate these?
 				Players.local_player._level_up()
 				Players.get_player(player)._level_up()
-				Chat.write("[center][rainbow]" + "o".repeat(CHAT_CHAR_WIDTH) + "[/rainbow][/center]")
-				Chat.write("[center][i]%s[/i][/center]" % Players.get_username(player))
-				Chat.write("[center][rainbow][i]PAL PROXIMITY POWER-UP![i][/rainbow][/center]")
-				Chat.write("[center][rainbow]" + "o".repeat(CHAT_CHAR_WIDTH) + "[/rainbow][/center]")
+
+				Chat.write("\n[center][i]%s[/i][/center]" % Players.get_username(player))
+				Chat.write("[center][rainbow][i][b]PAL PROXIMITY POWER-UP![/b][/i][/rainbow][/center]")
+				Chat.write("[center][i]LEVEL\t[/i][rainbow]%s[/rainbow][/center]\n" % (get_times_seen(player) + get_pal_power(player)))
+
 		else:
 			proximity_charge_bank[player] = new_charge_level
 
