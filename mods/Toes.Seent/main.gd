@@ -199,6 +199,10 @@ func _on_game_entered():
 		var pals_seen_msg = "[i]You have met %s pals! %s %s[/i]" % [_humanize_number(str(History.size())), heart_img, follow_ups[randi() % follow_ups.size()]]
 		Chat.write(pals_seen_msg)
 
+	if (true or randf() <= 0.01):
+		Chat.write("[url=https://ko-fi.com/A0A3YDMVY][color=#008583][i]If it has brought you joy, and you'd like to, you can support Pip Pals with a few fishbucks by clicking this message[/i][/color][/url]")
+		Chat.write("[color=#35ffffff](This message is only shown once every 100 lobbies)[/color]")
+
 	yield (get_tree().create_timer(30.0), "timeout")
 	just_joined = false
 
