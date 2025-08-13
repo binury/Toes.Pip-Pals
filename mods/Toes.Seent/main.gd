@@ -215,7 +215,6 @@ func get_pal_power(id: String) -> int:
 
 
 func _load_store() -> void:
-	# print("LOADING SEENT STORE")
 	var STORE_PATH = "user://seent_history.json"
 	var config_file = File.new()
 	if config_file.file_exists(STORE_PATH):
@@ -242,7 +241,6 @@ func _load_store() -> void:
 			}
 			_save_store()
 	else:
-		print("Seent:History does not exist!!!!!!!!")
 		History["76561198017477230"] = {
 				"username": "Toes",
 				"times_seen": 1,
@@ -317,40 +315,42 @@ func init_player(player: Actor) -> void:
 	_save_store()
 
 
-
 func get_times_seen_badge(id: String, rich: bool = true) -> String:
 	if Players.check(id) == false or Players.is_player_ignored(id):
 		return ""
-	var times_badge:= ""
-	var times_seen = get_times_seen(id)
-	var pal_power = get_pal_power(id)
-	var pip_sum = times_seen + pal_power
-	var is_friend = Steam.getFriendRelationship(int(id)) == 3
+	var times_badge := ""
+	var pips := get_times_seen(id) + get_pal_power(id)
 
+	# var is_friend = Steam.getFriendRelationship(int(id)) == 3
 
-	if pip_sum > 10: times_badge += "*".repeat(min(5, max((pip_sum -1) / 5, 1)))
-	elif pip_sum > 5: times_badge += "+".repeat(min(5, max((pip_sum - 1)  / 5, 1)))
-	elif pip_sum > 1: times_badge += "•".repeat(min(5, max(pip_sum -1, 1)))
+	if pips > 10: times_badge += "*".repeat(min(5, max((pips - 1) / 5, 1)))
+	elif pips > 5: times_badge += "+".repeat(min(5, max((pips - 1) / 5, 1)))
+	elif pips > 1: times_badge += "•".repeat(min(5, max(pips - 1, 1)))
 	else: return ""
 
-	var color: String = BRO_BADGE_COLOR if times_seen >= 20 else BASIC_BADGE_COLOR
-	if rich: times_badge = ("[color=%s]" % color) + (times_badge + "[/color]")
-	if times_seen >= 30:
-		times_badge = "[rainbow]" + times_badge + "[/rainbow]"
+	if rich:
+		var badge_color: String = BRO_BADGE_COLOR if pips >= 20 else BASIC_BADGE_COLOR
+		if pips >= 30:
+			times_badge = "[rainbow]" + times_badge + "[/rainbow]"
+		else:
+			# COLOR WILL OVERRIDE RAINBOW
+			times_badge = "[color=%s]%s[/color]" % [badge_color, times_badge]
 
-	times_badge = "[wave amp=25 freq=2]" +times_badge+ "[/wave]"
-	times_badge = times_badge.trim_suffix(" ")
-	if rich: times_badge = times_badge + "\n"
-	# Chat.write(id + ":" + times_badge)
+		if pips >= 10:
+			var clamped_amp = min(pips, 35)
+			times_badge = "[wave amp=%s freq=2]%s[/wave]" % [clamped_amp, times_badge]
+		if pips >= 20:
+			times_badge = "[tornado radius=3 freq=2]" + times_badge + "[/tornado]"
+		if pips >= 50:
+			times_badge = "[shake rate=2 level=6]" + times_badge + "[/shake]"
+
+		times_badge = times_badge.trim_suffix(" ")
+		times_badge = times_badge + "\n"
 	return times_badge
 
-func get_player_history(id: String):
-	if !History.has(id): return false
-	return History[id]
 
-
-func _sort_buddies(budA, budB):
-	return budA["times_seen"] > budB["times_seen"]
+func _sort_buddies(budA: Dictionary, budB: Dictionary):
+	return budA.get("times_seen") + budA.get("proximity_power", 0) > budB.get("times_seen") + budB.get("proximity_power", 0)
 
 func _warn_if_incompat():
 	var TitleAPI = get_node_or_null("/root/TitleAPI")
