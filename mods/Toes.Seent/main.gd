@@ -240,19 +240,25 @@ func _save_store() -> void:
 
 
 func init_player(player: Actor) -> void:
-	if !(Players.is_player_valid(player) and Players.is_player_valid(Players.local_player)) :
+	if !(Players.is_player_valid(player) and Players.is_player_valid(Players.local_player)):
 		# Chat.notify("PP: Invalid player received")
 		return
 	var player_username = Players.get_username(player)
 	var player_id = Players.get_id(player)
+	# This is awkward so don't allow it
 	if Players.is_player_ignored(player_id):
 		return
-	var current_lobby = Network.STEAM_LOBBY_ID
-	# var is_friend = Steam.getFriendRelationship(player.owner_id) == 3
+	# Quick leaves (?)
 	if not Players.check(player_id):
 		return
-	if player_id == Players.get_id(Players.local_player): return
+	# You can't be your own friend
+	if Players.local_player == player:
+		# Apparently this slipped through an early version of Pip Pals
+		# so we'll erase the key just in case...
+		History.erase(player_id)
+		return
 
+	var current_lobby = Network.STEAM_LOBBY_ID
 	var today = Time.get_date_string_from_system(true)
 	if History.has(player_id):
 		var history = History[player_id]
