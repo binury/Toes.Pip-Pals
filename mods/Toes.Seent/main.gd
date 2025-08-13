@@ -1,14 +1,15 @@
 extends Node
 
-const BASIC_BADGE_COLOR: = "#e69d00"
-const BRO_BADGE_COLOR: = "#9d00e6"
-const PAL_BADGE_COLOR: = "#ff2688"
+const BASIC_BADGE_COLOR := "#e69d00"
+const BRO_BADGE_COLOR := "#9d00e6"
+const PAL_BADGE_COLOR := "#ff2688"
 
 
 #onready var Players: Players = get_node("/root/ToesSocks/Players")
 #onready var Chat: Chat = get_node("/root/ToesSocks/Chat")
 onready var Players = get_node("/root/ToesSocks/Players")
 onready var Chat = get_node("/root/ToesSocks/Chat")
+
 
 var italics_font_data = preload("res://Assets/Themes/CartographCF-RegularItalic.otf")
 var bold_italics_font_data = preload("res://Assets/Themes/CartographCF-BoldItalic.otf")
@@ -30,6 +31,29 @@ export var proximity_charge_bank = {}
 var just_joined := true
 # var greet_queue := [] # TODO Unused
 
+func _reverse(_str: String) -> String:
+	var reversed := ""
+	for i in range(_str.length() - 1, -1, -1):
+		reversed += _str[i]
+	return reversed
+
+func _humanize_number(number: String) -> String:
+	var dec: String
+	if "." in number:
+		dec = "." + number.split(".", false, 0)[1]
+	if len(number.replace(dec, "")) < 4:
+		return number
+	else:
+		var to_return: String
+		var reversed := _reverse(number.replace(dec, ""))
+		for i in range(reversed.length()):
+			var item = reversed[i]
+			if i != 0 and i % 3 == 0:
+				item += ","
+			to_return = item + to_return
+		return to_return + dec
+
+
 func _init() -> void:
 	_load_store()
 
@@ -44,7 +68,7 @@ func _load_custom_italics_font():
 
 	var gamechat = get_node("/root/playerhud/main/in_game/gamechat/RichTextLabel")
 
-	var italics_font: = DynamicFont.new()
+	var italics_font := DynamicFont.new()
 	italics_font.font_data = italics_font_data
 	italics_font.size = 22
 	italics_font.outline_size = 1
@@ -52,7 +76,7 @@ func _load_custom_italics_font():
 	italics_font.add_fallback(fallback_font_data)
 	gamechat["custom_fonts/italics_font"] = italics_font
 
-	var bold_italics_font: = DynamicFont.new()
+	var bold_italics_font := DynamicFont.new()
 	bold_italics_font.font_data = bold_italics_font_data
 	bold_italics_font.size = 22
 	bold_italics_font.outline_size = 1
@@ -62,7 +86,6 @@ func _load_custom_italics_font():
 
 	gamechat["custom_constants/table_vseparation"] = 5
 	gamechat["custom_constants/line_separation"] = 2
-
 
 
 func _process(delta: float) -> void:
@@ -115,7 +138,7 @@ func _on_game_entered():
 
 	var players: Array = Players.get_players()
 
-	var buddies: = []
+	var buddies := []
 	for player in players:
 		var id = Players.get_id(player)
 		buddies.append({
@@ -126,40 +149,41 @@ func _on_game_entered():
 	buddies.sort_custom(self, "_sort_buddies")
 
 	if players.size() > 0:
-		Chat.write("[center][i]== Pal Scanner ==[/i][/center]")
+		Chat.write("[center][i]=== Pal Scanner ===[/i][/center]")
 		var found_some = false
 		for buddy in buddies:
 			if buddy.times_seen <= 1 or Players.is_player_ignored(buddy.id): continue
 			found_some = true
-			Chat.write(get_times_seen_badge(buddy.id, false) + " (" + str(buddy.times_seen) + ") " + buddy.username )
-		if !found_some: Chat.write("[i]...No pals here, yet![/i]")
+			Chat.write(get_times_seen_badge(buddy.id, false) + " (" + _humanize_number(str(get_times_seen(buddy.id) + get_pal_power(buddy.id))) + ") " + buddy.username)
+		if !found_some: Chat.write("[i]Hmm...No pals here, yet![/i]")
 
 	var met_min_pals = History.size() >= 100
-	if randf() <= 0.08 and met_min_pals:
-		var sorted_history: = History.values()
+	if (randf() <= 0.08 or players.size() < 1) and met_min_pals:
+		var sorted_history := History.values()
 		sorted_history.sort_custom(self, "_sort_buddies")
 		buddies = sorted_history
 
-		var ordinal_imgs: = {
+		var ordinal_imgs := {
 			0: "res://Assets/Textures/UI/countdown3.png",
 			1: "res://Assets/Textures/UI/countdown2.png",
 			2: "res://Assets/Textures/UI/countdown1.png"
 		}
 
-		var pal_standings: = "[img]res://Assets/Textures/UI/knot_sep.png[/img][table=3]"
+		var pal_standings := "[img]res://Assets/Textures/UI/knot_sep.png[/img][table=3]"
+		# pal_standings += "[cell]Rank[/cell] [cell]Pal[/cell] [cell]Power Level[/cell]"
 		for i in range(3):
 			var buddy: Dictionary = buddies[i]
 #			Chat.write("[img=36]%s[/img] %s - %s" % [ordinal_imgs[i], buddy.username, buddy.times_seen])
-			pal_standings += "[cell][img=36]%s[/img][/cell]" % ordinal_imgs[i]
-			pal_standings += "[cell][i]%s[/i][/cell]" % buddy.username
+			pal_standings += "[cell][img=36]%s[/img]\t[/cell]" % ordinal_imgs[i]
+			pal_standings += "[cell][i]%s[/i]\t[/cell]" % buddy.username
 			pal_standings += "[cell]%s[/cell]" % buddy.times_seen
 		pal_standings += "[/table]"
-		var stars_img = "[img=48]res://Assets/Textures/UI/stars.png[/img]"
+		var stars_img = "[img=48]res://Assets/Textures/Particles/emotion_particles2.png[/img]"
 		Chat.write("[center][wave amp=33 freq=1.05][i]%s PAL HALL OF FAME %s[/i][/wave][/center]" % [stars_img, stars_img])
 		Chat.write(pal_standings)
 
-	if randf() <= 0.05 and met_min_pals:
-		var follow_ups: = [
+	if (randf() <= 0.05 or players.size() < 1) and met_min_pals:
+		var follow_ups := [
 			"Can you name them all?",
 			"Who's your favorite?",
 			"I wonder where they are now...",
@@ -171,7 +195,7 @@ func _on_game_entered():
 		]
 
 		var heart_img = "[img=36]res://Assets/Textures/UI/item_star.png[/img]"
-		var pals_seen_msg = "[i]You have met %s pals! %s %s[/i]" % [ str(History.size()), heart_img, follow_ups[randi() % follow_ups.size()] ]
+		var pals_seen_msg = "[i]You have met %s pals! %s %s[/i]" % [_humanize_number(str(History.size())), heart_img, follow_ups[randi() % follow_ups.size()]]
 		Chat.write(pals_seen_msg)
 
 	yield (get_tree().create_timer(30.0), "timeout")
