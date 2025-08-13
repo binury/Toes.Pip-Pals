@@ -1,6 +1,7 @@
 # Pip Pals
 
-<img src="https://i.imgur.com/2GzpE1W.gif">
+![pip_pals](https://github.com/user-attachments/assets/99227833-300d-4fe3-9caf-cd2bbf2246b6)
+
 <br/>
 <br/>
 
