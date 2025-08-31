@@ -177,10 +177,12 @@ func _on_game_entered():
 #			Chat.write("[img=36]%s[/img] %s - %s" % [ordinal_imgs[i], buddy.username, buddy.times_seen])
 			pal_standings += "[cell][img=36]%s[/img]\t[/cell]" % ordinal_imgs[i]
 			pal_standings += "[cell][i]%s[/i]\t[/cell]" % buddy.username
-			pal_standings += "[cell]%s[/cell]" % buddy.times_seen
+			pal_standings += "[cell]%s[/cell]" % _humanize_number(str(buddy.times_seen + buddy.proximity_power))
 		pal_standings += "[/table]"
 		var stars_img = "[img=48]res://Assets/Textures/Particles/emotion_particles2.png[/img]"
-		Chat.write("[center][wave amp=33 freq=1.05][i]%s PAL HALL OF FAME %s[/i][/wave][/center]" % [stars_img, stars_img])
+		Chat.write(
+			"[center][wave amp=33 freq=1.05][i]%s PAL HALL OF FAME %s[/i][/wave][/center]" % [stars_img, stars_img]
+		)
 		Chat.write(pal_standings)
 
 	if (randf() <= 0.05 or players.size() < 1) and met_min_pals:
