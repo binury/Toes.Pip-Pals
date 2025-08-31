@@ -294,9 +294,6 @@ func init_player(player: Actor) -> void:
 		return
 	var player_username = Players.get_username(player)
 	var player_id = Players.get_id(player)
-	# This is awkward so don't allow it
-	if Players.is_player_ignored(player_id):
-		return
 	# Quick leaves (?)
 	if not Players.check(player_id):
 		return
@@ -305,6 +302,9 @@ func init_player(player: Actor) -> void:
 		# Apparently this slipped through an early version of Pip Pals
 		# so we'll erase the key just in case...
 		History.erase(player_id)
+		return
+		# This is awkward so don't allow it
+	if Players.is_player_ignored(player_id):
 		return
 
 	var current_lobby := Steam.getLobbyData(Network.STEAM_LOBBY_ID, "name")
