@@ -309,6 +309,7 @@ func init_player(player: Actor) -> void:
 	else:
 		if !just_joined: Chat.notify("It's your first time meeting " + player_username + ". Say hi!")
 		History[player_id] = {
+			"id": player_id,
 			"username": player_username,
 			"times_seen": 1,
 			"last_seen_in": current_lobby,
