@@ -322,7 +322,7 @@ func init_player(player: Actor) -> void:
 
 
 func get_times_seen_badge(id: String, rich: bool = true) -> String:
-	if Players.check(id) == false or Players.is_player_ignored(id):
+	if str(Players.local_player.owner_id) == id or Players.check(id) == false or Players.is_player_ignored(id):
 		return ""
 	var times_badge := ""
 	var pips := get_times_seen(id) + get_pal_power(id)
