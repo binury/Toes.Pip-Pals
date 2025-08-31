@@ -4,17 +4,16 @@ const BASIC_BADGE_COLOR := "#e69d00"
 const BRO_BADGE_COLOR := "#9d00e6"
 const PAL_BADGE_COLOR := "#ff2688"
 
-
 #onready var Players: Players = get_node("/root/ToesSocks/Players")
 #onready var Chat: Chat = get_node("/root/ToesSocks/Chat")
 onready var Players = get_node("/root/ToesSocks/Players")
 onready var Chat = get_node("/root/ToesSocks/Chat")
 
-
 var italics_font_data = preload("res://Assets/Themes/CartographCF-RegularItalic.otf")
 var bold_italics_font_data = preload("res://Assets/Themes/CartographCF-BoldItalic.otf")
 
 var History: Dictionary
+
 
 class PlayerHistory:
 	var username: String
@@ -31,11 +30,13 @@ export var proximity_charge_bank = {}
 var just_joined := true
 # var greet_queue := [] # TODO Unused
 
+
 func _reverse(_str: String) -> String:
 	var reversed := ""
 	for i in range(_str.length() - 1, -1, -1):
 		reversed += _str[i]
 	return reversed
+
 
 func _humanize_number(number: String) -> String:
 	var dec: String
@@ -56,6 +57,7 @@ func _humanize_number(number: String) -> String:
 
 func _init() -> void:
 	_load_store()
+
 
 func _ready() -> void:
 	Players.connect("player_added", self, "init_player")
@@ -89,12 +91,14 @@ func _load_custom_italics_font():
 
 
 func _process(delta: float) -> void:
-	if not Players.in_game: return
-	if just_joined: return
+	if not Players.in_game or not Players.local_player:
+		return
+	if just_joined:
+		return
 
 	var CHARGE_RANGE := 15.00
 	var MINUTES_TO_FULL_CHARGE = 25
-	var CHAT_CHAR_WIDTH := 30 # Apprx
+	var CHAT_CHAR_WIDTH := 30  # Apprx
 	var players_within_range := []
 	# TODO: Refactor this out of here
 	var pos: Vector3 = Players.get_position(Players.local_player)
@@ -117,7 +121,7 @@ func _process(delta: float) -> void:
 
 				if Players.is_busy():
 					while Players.is_busy():
-						yield (get_tree().create_timer(3.0), "timeout")
+						yield(get_tree().create_timer(3.0), "timeout")
 
 				# TODO: Consolidate these?
 				Players.local_player._level_up()
@@ -204,19 +208,25 @@ func _on_game_entered():
 		]
 
 		var heart_img = "[img=36]res://Assets/Textures/UI/item_star.png[/img]"
-		var pals_seen_msg = "[i]You have met %s pals! %s %s[/i]" % [_humanize_number(str(History.size())), heart_img, follow_ups[randi() % follow_ups.size()]]
+		var pals_seen_msg = (
+			"[i]You have met %s pals! %s %s[/i]"
+			% [_humanize_number(str(History.size())), heart_img, follow_ups[randi() % follow_ups.size()]]
+		)
 		Chat.write(pals_seen_msg)
 
-	if (randf() <= 0.01):
-		Chat.write("[url=https://ko-fi.com/A0A3YDMVY][color=#008583][i]If it has brought you joy, and you'd like to, you can support Pip Pals with a few fishbucks by clicking this message[/i][/color][/url]")
+	if randf() <= 0.01:
+		Chat.write(
+			"[url=https://ko-fi.com/A0A3YDMVY][color=#008583][i]If it has brought you joy, and you'd like to, you can support Pip Pals with a few fishbucks by clicking this message[/i][/color][/url]"
+		)
 		Chat.write("[color=#35ffffff](This message is only shown once every 100 lobbies)[/color]")
 
-	yield (get_tree().create_timer(30.0), "timeout")
+	yield(get_tree().create_timer(30.0), "timeout")
 	just_joined = false
 
 
-func get_times_seen(id: String) -> int:
-	if id == Players.get_id(Players.local_player): return 0
+func _get_times_seen(id: String) -> int:
+	if id == Players.get_id(Players.local_player):
+		return 0
 	var history: Dictionary = History.get(id, {})
 	return history.get("times_seen", 1)
 
@@ -256,16 +266,18 @@ func _load_store() -> void:
 			_save_store()
 	else:
 		History["76561198017477230"] = {
-				"username": "Toes",
-				"times_seen": 1,
-				"last_seen_in": 109775242119639488,
-				"first_seen_at": "1993-05-01",
-				"last_seen_at": "2025-02-01"
-			}
+			"username": "Toes",
+			"times_seen": 1,
+			"last_seen_in": 109775242119639488,
+			"first_seen_at": "1993-05-01",
+			"last_seen_at": "2025-02-01"
+		}
 		_save_store()
 
+
 func _exit_tree() -> void:
-	if !History.empty(): _save_store()
+	if !History.empty():
+		_save_store()
 
 
 func _save_store() -> void:
@@ -295,12 +307,14 @@ func init_player(player: Actor) -> void:
 		History.erase(player_id)
 		return
 
-	var current_lobby = Network.STEAM_LOBBY_ID
+	var current_lobby := Steam.getLobbyData(Network.STEAM_LOBBY_ID, "name")
+	var lobby_code := Steam.getLobbyData(Network.STEAM_LOBBY_ID, "code")
 	var today = Time.get_date_string_from_system(true)
 	if History.has(player_id):
 		var history = History[player_id]
-		var is_new_sighting = history.last_seen_at != today and history.last_seen_in != current_lobby
-		if not is_new_sighting: return
+		var is_new_sighting = history.last_seen_at != today and str(history.last_seen_in) != str(current_lobby)
+		if not is_new_sighting:
+			return
 		history.times_seen += 1
 		history.last_seen_in = current_lobby
 		history.last_seen_at = today
@@ -312,10 +326,18 @@ func init_player(player: Actor) -> void:
 			else:
 				history.prev_names = [history.username]
 			history.username = username
-
+		var sightings = history.get("sightings", {})
+		if sightings.has(current_lobby):
+			sightings[current_lobby].times += 1
+		else:
+			sightings[current_lobby] = {
+				"times": 1,
+				"code": lobby_code
+			}
 
 	else:
-		if !just_joined: Chat.notify("It's your first time meeting " + player_username + ". Say hi!")
+		if !just_joined:
+			Chat.notify("It's your first time meeting " + player_username + ". Say hi!")
 		History[player_id] = {
 			"id": player_id,
 			"username": player_username,
@@ -325,7 +347,12 @@ func init_player(player: Actor) -> void:
 			"first_seen": today,
 			"proximity_power": 0,
 			"prev_names": [],
-			# "is_friend": is_friend
+			"sightings": {
+				current_lobby: {
+					"times": 1,
+					"code": lobby_code
+				}
+			}
 		}
 	_save_store()
 
@@ -336,12 +363,16 @@ func get_times_seen_badge(id: String, rich: bool = true) -> String:
 	var times_badge := ""
 	var pips := get_pal_power(id)
 
-	# var is_friend = Steam.getFriendRelationship(int(id)) == 3
+	# var is_friend = Steam.getFriendRelationship(int(id)) == 3	# var is_friend = Steam.getFriendRelationship(int(id)) == 3
 
-	if pips > 10: times_badge += "*".repeat(min(5, max((pips - 1) / 5, 1)))
-	elif pips > 5: times_badge += "+".repeat(min(5, max((pips - 1) / 5, 1)))
-	elif pips > 1: times_badge += "•".repeat(min(5, max(pips - 1, 1)))
-	else: return ""
+	if pips > 10:
+		times_badge += "*".repeat(min(5, max((pips - 1) / 5, 1)))
+	elif pips > 5:
+		times_badge += "+".repeat(min(5, max((pips - 1) / 5, 1)))
+	elif pips > 1:
+		times_badge += "•".repeat(min(5, max(pips - 1, 1)))
+	else:
+		return ""
 
 	if rich:
 		var badge_color: String = BRO_BADGE_COLOR if pips >= 20 else BASIC_BADGE_COLOR
@@ -365,12 +396,18 @@ func get_times_seen_badge(id: String, rich: bool = true) -> String:
 
 
 func _sort_buddies(budA: Dictionary, budB: Dictionary):
-	return budA.get("times_seen") + budA.get("proximity_power", 0) > budB.get("times_seen") + budB.get("proximity_power", 0)
+	return (
+		budA.get("times_seen") + budA.get("proximity_power", 0)
+		> budB.get("times_seen") + budB.get("proximity_power", 0)
+	)
+
 
 func _warn_if_incompat():
 	var TitleAPI = get_node_or_null("/root/TitleAPI")
 	if is_instance_valid(TitleAPI):
 		Chat.write(
-			"[color=#8c0a22]You appear to have installed a conflicting mod which is known to [u]break Pip Pals!! [/u][/color]" +
-			"If you encounter issues, [u]disable or uninstall TitleAPI[/u]"
+			(
+				"[color=#8c0a22]You appear to have installed a conflicting mod which is known to [u]break Pip Pals!! [/u][/color]"
+				+ "If you encounter issues, [u]disable or uninstall TitleAPI[/u]"
+			)
 		)
