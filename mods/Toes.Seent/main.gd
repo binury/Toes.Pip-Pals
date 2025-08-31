@@ -125,7 +125,7 @@ func _process(delta: float) -> void:
 
 				Chat.write("\n[center][i]%s[/i][/center]" % Players.get_username(player))
 				Chat.write("[center][rainbow][i][b]PAL PROXIMITY POWER-UP![/b][/i][/rainbow][/center]")
-				Chat.write("[center][i]LEVEL\t[/i][rainbow]%s[/rainbow][/center]\n" % (get_times_seen(player) + get_pal_power(player)))
+				Chat.write("[center][i]LEVEL\t[/i][rainbow]%s[/rainbow][/center]\n" % get_pal_power(player))
 
 		else:
 			proximity_charge_bank[player] = new_charge_level
@@ -142,21 +142,27 @@ func _on_game_entered():
 	var buddies := []
 	for player in players:
 		var id = Players.get_id(player)
-		buddies.append({
-			"id": id,
-			"username": Players.get_username(player),
-			"times_seen": get_times_seen(id)
-		})
+		buddies.append({"id": id, "username": Players.get_username(player), "times_seen": _get_times_seen(id)})
 	buddies.sort_custom(self, "_sort_buddies")
 
 	if players.size() > 0:
 		Chat.write("[center][i]=== Pal Scanner ===[/i][/center]")
 		var found_some = false
 		for buddy in buddies:
-			if buddy.times_seen <= 1 or Players.is_player_ignored(buddy.id): continue
+			if buddy.times_seen <= 1 or Players.is_player_ignored(buddy.id):
+				continue
 			found_some = true
-			Chat.write(get_times_seen_badge(buddy.id, false) + " (" + _humanize_number(str(get_times_seen(buddy.id) + get_pal_power(buddy.id))) + ") " + buddy.username)
-		if !found_some: Chat.write("[i]Hmm...No pals here, yet![/i]")
+			Chat.write(
+				(
+					get_times_seen_badge(buddy.id, false)
+					+ " ("
+					+ _humanize_number(str(get_pal_power(buddy.id)))
+					+ ") "
+					+ buddy.username
+				)
+			)
+		if !found_some:
+			Chat.write("[i]Hmm...No pals here, yet![/i]")
 
 	var met_min_pals = History.size() >= 100
 	if (randf() <= 0.08 or players.size() < 1) and met_min_pals:
@@ -214,10 +220,12 @@ func get_times_seen(id: String) -> int:
 	var history: Dictionary = History.get(id, {})
 	return history.get("times_seen", 1)
 
+
 func get_pal_power(id: String) -> int:
-	if id == Players.get_id(Players.local_player) or Players.is_player_ignored(id): return 0
+	if id == Players.get_id(Players.local_player) or Players.is_player_ignored(id):
+		return 0
 	var history: Dictionary = History.get(id, {})
-	return history.get("proximity_power", 0)
+	return _get_times_seen(id) + history.get("proximity_power", 0)
 
 
 func _load_store() -> void:
@@ -326,7 +334,7 @@ func get_times_seen_badge(id: String, rich: bool = true) -> String:
 	if str(Players.local_player.owner_id) == id or Players.check(id) == false or Players.is_player_ignored(id):
 		return ""
 	var times_badge := ""
-	var pips := get_times_seen(id) + get_pal_power(id)
+	var pips := get_pal_power(id)
 
 	# var is_friend = Steam.getFriendRelationship(int(id)) == 3
 
