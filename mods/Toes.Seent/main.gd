@@ -119,13 +119,15 @@ func _process(delta: float) -> void:
 				history.last_bonus_received = today
 				_save_store()
 
-				if Players.is_busy():
-					while Players.is_busy():
+				if Players.local_player.locked:
+					while Players.local_player.locked:
 						yield(get_tree().create_timer(3.0), "timeout")
 
 				# TODO: Consolidate these?
 				Players.local_player._level_up()
 				Players.get_player(player)._level_up()
+				yield(get_tree().create_timer(2.0), "timeout")
+				Players.local_player._exit_animation()
 
 				Chat.write("\n[center][i]%s[/i][/center]" % Players.get_username(player))
 				Chat.write("[center][rainbow][i][b]PAL PROXIMITY POWER-UP![/b][/i][/rainbow][/center]")
