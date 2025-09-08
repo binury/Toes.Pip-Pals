@@ -23,6 +23,7 @@ If it has brought you joy, and you'd like to, you can support Pip Pals with a fe
 
 - Hotfix for leveling up while you are reeling issue(s)
   - Please report any issues your encounter related to Pal-Power level-ups
+- CHANGED proximity power no longer accrues while the window is unfocused
 
 ## 1.4.0 - Likely the final major update to Pip Pals
 

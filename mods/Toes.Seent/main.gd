@@ -95,6 +95,8 @@ func _process(delta: float) -> void:
 		return
 	if just_joined:
 		return
+	if not OS.is_window_focused():
+		return
 
 	var CHARGE_RANGE := 15.00
 	var MINUTES_TO_FULL_CHARGE = 25
@@ -111,6 +113,7 @@ func _process(delta: float) -> void:
 		var new_charge_level = proximity_charge_bank.get(player, 0.0) + delta
 		var today := Time.get_date_string_from_system(true)
 		var history: Dictionary = History.get(player, {})
+		# TODO: Why would this happen?
 		var last_bonus_received_on: String = history.get("last_bonus_received", "Never")
 		if new_charge_level >= MINUTES_TO_FULL_CHARGE * 60.0:
 			proximity_charge_bank[player] = 0.0
@@ -126,6 +129,7 @@ func _process(delta: float) -> void:
 				# TODO: Consolidate these?
 				Players.local_player._level_up()
 				Players.get_player(player)._level_up()
+				# Just in case...
 				yield(get_tree().create_timer(2.0), "timeout")
 				Players.local_player._exit_animation()
 
