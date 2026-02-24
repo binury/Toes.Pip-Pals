@@ -246,8 +246,14 @@ func _on_game_entered():
 			"[url=https://ko-fi.com/A0A3YDMVY][color=#008583][i]If it has brought you joy, and you'd like to, you can support Pip Pals with a few fishbucks by clicking this message[/i][/color][/url]"
 		)
 		Chat.write("[color=#35ffffff](This message is only shown once every 100 lobbies)[/color]")
+	
+	for player in players:
+		# TODO: Handle delays better rather
+		yield(get_tree().create_timer(1.0), "timeout")
+		init_player(player)
 
-	yield(get_tree().create_timer(30.0), "timeout")
+
+	yield(get_tree().create_timer(15.0), "timeout")
 	just_joined = false
 
 
@@ -347,7 +353,7 @@ func init_player(player: Actor) -> void:
 		history.last_seen_at = today
 		var username: String = Players.get_username(str(player_id))
 		if history.username != username:
-			Chat.notify("Remember your old pal %s? They're going by %s now" % [history.username, username])
+			Chat.notify("Remember your Pal %s? They're going by %s now" % [history.username, username])
 			if "prev_names" in history and typeof(history.prev_names) == TYPE_ARRAY:
 				history.prev_names.append(history.username)
 			else:
