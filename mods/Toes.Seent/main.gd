@@ -142,18 +142,17 @@ func _process(delta: float) -> void:
 				history.last_bonus_received = today
 				_save_store()
 
-				if Players.local_player.locked:
-					while Players.local_player.locked:
-						yield(get_tree().create_timer(3.0), "timeout")
-
-				# TODO: Consolidate these?
-				Players.local_player._level_up()
+				# TODO: Re-enable animation
+				# if Players.local_player.locked or Players.is_busy():
+				# 	while Players.local_player.locked or Players.is_busy():
+				# 		yield(get_tree().create_timer(1.0), "timeout")
+				# Players.local_player._level_up()
 				Players.get_player(player)._level_up()
 				# Just in case...
-				yield(get_tree().create_timer(2.0), "timeout")
-				Players.local_player._exit_animation()
+				# yield(get_tree().create_timer(2.0), "timeout")
+				# Players.local_player._exit_animation()
 				# Surprisingly, exit_animation does not unlock so...
-				Players.local_player.locked = false
+				# Players.local_player.locked = false
 
 				Chat.write("\n[center][i]%s[/i][/center]" % Players.get_username(player))
 				Chat.write("[center][rainbow][i][b]PAL PROXIMITY POWER-UP![/b][/i][/rainbow][/center]")
